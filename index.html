@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+
+<!-- open graph -->
+<meta property="og:url" content="http://andrewmacheret.com/projects/projects/no-drone-zones/" />
+<meta property="og:image" content="http://andrewmacheret.com/projects/projects/no-drone-zones/no-drone-zone.png" />
+<meta property="og:title" content="Nearby No-Drone Zones" />
+<meta property="og:description" content="Shows no-drone zones near your location." />
+<meta property="og:type" content="website" />
+
+<!-- title -->
+<title>Nearby No-Drone Zones</title>
+
+<!-- js libraries -->
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBeBMe61sFuSrOP3oMp39vUzHrmkfOU1aM"></script>
+
+<!-- custom js -->
+<script type="text/javascript" src="jquery.custom.js"></script>
+<script type="text/javascript" src="geo.js"></script>
+<script type="text/javascript" src="map.js"></script>
+<script type="text/javascript" src="location-watcher.js"></script>
+<script type="text/javascript" src="no-drone-zone.js"></script>
+<script type="text/javascript" src="index.js"></script>
+
+<!-- css -->
+<link rel="stylesheet" type="text/css" href="index.css"> 
+
+<body>
+<div id="body-wrapper">
+  
+  <div id="content">
+    
+    <div id="drone"><img src="no-drone-zone.png"></div>
+    
+    <div id="position">
+      <div id="position-header">Current location</div>
+      <div id="latitude"></div>
+      <div id="longitude"></div>
+      <div id="accuracy"></div>
+      <div id="altitude"></div>
+      <div id="altitudeAccuracy"></div>
+      <div id="time">Loading...</div>
+    </div>
+
+    <div id="nearest-wrapper">
+      <div id="nearest-header">
+        No-drone zones
+      </div>
+
+      <div id="fields">
+        <div id="distance-wrapper">
+          Within:
+          <input id="max-distance" value="50" type="number">
+        </div>
+        <div id="units-wrapper">
+          <select id="units">
+            <option value="kilometers" selected="selected">kilometers</option>
+            <option value="miles">miles</option>
+          </select>
+        </div>
+      </div>
+      
+      <div id="nearest">Loading...</div>
+
+    </div>
+
+    <div id="source">Source: <a href="https://github.com/mapbox/drone-feedback/tree/master/sources/geojson">https://github.com/mapbox/drone-feedback/tree/master/sources/geojson</a></div>
+  </div>
+
+  <div id="map"></div>
+
+</div>
+</body>
+</html>
