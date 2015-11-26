@@ -1,0 +1,79 @@
+html {
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+html, body {
+  margin  : 0;
+  padding : 0;
+}
+
+#content {
+  float: left;
+  width: 46%;
+  margin: 0;
+  padding: 2%;
+}
+
+#map {
+  float: right;
+  width: 50%;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+#position-header, #nearest-header {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+#nearest-wrapper {
+  margin-top: 20px;
+}
+
+#nearest {
+  margin-top: 10px;
+}
+
+#source {
+  margin-top: 20px;
+  font-size: 12px;
+  display: none;
+}
+
+input, select {
+  font-size: 16px;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+#distance-wrapper, #units-wrapper {
+  display: inline-block;
+}
+
+#max-distance {
+  width: 40px;
+}
+#units {
+}
+
+li {
+  list-style-type: none;
+}
+
+.inside {
+  color: red;
+}
+
+.outside {
+  color: orange;
+}
+
+#drone {
+  float: right;
+}
+
+#drone img {
+  width: 120px;
+}
+
