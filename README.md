@@ -2,7 +2,7 @@
 
 ![Drone image](drone.png?raw=true "Drone image")
 
-A web-based map of known no-drone-zones in your area using [jQuery](https://jquery.com/), [Mapbox drone data](https://github.com/mapbox/drone-feedback/tree/master/sources/geojson), [Google Maps API](https://developers.google.com/maps/), and [Turf.js](http://turfjs.org/).
+A web-based map of known no-drone-zones in your area using [Mapbox drone data](https://github.com/mapbox/drone-feedback/tree/master/sources/geojson), [Google Maps API](https://developers.google.com/maps/), [Turf.js](http://turfjs.org/), and [jQuery](https://jquery.com/).
 
 See it running at [http://andrewmacheret.com/projects/no-drone-zones](http://andrewmacheret.com/projects/no-drone-zones).
 
