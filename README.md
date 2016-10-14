@@ -2,11 +2,11 @@
 
 [![Build Status](https://travis-ci.org/andrewmacheret/no-drone-zones.svg?branch=master)](https://travis-ci.org/andrewmacheret/no-drone-zones) [![License](https://img.shields.io/badge/license-MIT-lightgray.svg)](https://github.com/andrewmacheret/no-drone-zones/blob/master/LICENSE.md)
 
-![Drone image](www/drone.png?raw=true "Drone image")
-
 A web-based map of known no-drone-zones in your area using [Mapbox drone data](https://github.com/mapbox/drone-feedback/tree/master/sources/geojson), [Google Maps API](https://developers.google.com/maps/), [Turf.js](http://turfjs.org/), and [jQuery](https://jquery.com/).
 
 See it running at [https://andrewmacheret.com/projects/no-drone-zones](https://andrewmacheret.com/projects/no-drone-zones).
+
+![Drone image](www/drone.png?raw=true "Drone image")
 
 Prereqs:
 * A web server (like [Apache](https://httpd.apache.org/)).
