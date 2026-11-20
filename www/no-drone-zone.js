@@ -44,7 +44,23 @@ var NoDroneZone = function($options) {
       document.getElementById('accuracy').textContent = 'Accuracy: \u00b1' + position.coords.accuracy + 'm (95% confidence)';
       document.getElementById('altitude').textContent = position.coords.altitude != null ? 'Altitude: ' + position.coords.altitude + 'm' : '';
       document.getElementById('altitudeAccuracy').textContent = position.coords.altitudeAccuracy != null ? 'Altitude Accuracy: \u00b1' + position.coords.altitudeAccuracy + 'm (95% confidence)' : '';
-      document.getElementById('time').textContent = 'Time: ' + new Date(position.timestamp);
+      document.getElementById('time').textContent = 'Updated ' + new Date(position.timestamp).toLocaleTimeString();
+      document.getElementById('position').hidden = false;
+    },
+
+    showStatus: function(text) {
+      var status = document.getElementById('status');
+      status.classList.remove('error');
+      status.textContent = text;
+      status.hidden = !text;
+    },
+
+    showError: function(text) {
+      var status = document.getElementById('status');
+      status.hidden = false;
+      status.classList.add('error');
+      status.setAttribute('role', 'alert');
+      status.textContent = text;
     },
 
     showNearest: function(nearest) {
@@ -72,15 +88,24 @@ var NoDroneZone = function($options) {
 
         ul.append(li);
       }.bind(this));
+      if (!nearest.length) {
+        ul = document.createElement('p');
+        ul.className = 'empty';
+        ul.textContent = 'None nearby.';
+      }
       document.getElementById('nearest').replaceChildren(ul);
-
-      // index.css hides it until the list loads
-      document.getElementById('source').style.display = 'block';
+      document.getElementById('nearest-count').textContent = nearest.length;
+      var wrapper = document.getElementById('nearest-wrapper');
+      if (wrapper.hidden) {
+        wrapper.hidden = false;
+        // start open on big screens, closed on phones so the map has room
+        wrapper.open = window.matchMedia('(min-width: 701px)').matches;
+      }
     },
 
     start: function() {
       if (!navigator.geolocation) {
-        document.getElementById('content').innerHTML = 'Geolocation is required for this demo. Try a <a href="https://www.google.com/chrome/browser/">different browser</a>.';
+        this.showError('Your browser doesn\'t support location, which this page needs.');
         return;
       }
 
@@ -93,7 +118,7 @@ var NoDroneZone = function($options) {
       }, function(geoJSONs, err) {
         if (err) {
           console.error(err);
-          document.getElementById('nearest').textContent = 'Error loading: ' + (err.statusText || err);
+          this.showError('Could not load the no-drone zones: ' + (err.statusText || err));
           return;
         }
 
@@ -102,13 +127,16 @@ var NoDroneZone = function($options) {
         this.watcher.startWatching(function(position, err) {
           if (err) {
             console.error(err);
-            document.getElementById('time').textContent = 'Could not get your location: ' + err.message;
+            this.showError(err.code === 1
+              ? 'Location access was denied. Allow location for this site, then reload.'
+              : 'Could not get your location: ' + err.message);
             return;
           }
 
           console.log(new Date(), position);
 
           this.position = position;
+          this.showStatus('');
 
           this.showPosition(position);
 
