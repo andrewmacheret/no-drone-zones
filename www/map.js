@@ -58,7 +58,7 @@ var DroneMap = function($options) {
       }
 
       if (!this.centerCircle) {
-        this.centerCircle = L.circle(center, $.extend({radius: position.coords.accuracy}, this.centerCircleOptions))
+        this.centerCircle = L.circle(center, Object.assign({radius: position.coords.accuracy}, this.centerCircleOptions))
           .addTo(this.map);
       } else {
         this.centerCircle.setLatLng(center);
@@ -80,7 +80,7 @@ var DroneMap = function($options) {
     addGeoJSONs: function(geoJSONs, callback) {
       var colors = ['red', 'green', 'blue'];
 
-      $.each(geoJSONs, function(g, geoJSON) {
+      geoJSONs.forEach(function(geoJSON, g) {
         var color = colors[g % colors.length];
 
         L.geoJSON(geoJSON, {
@@ -88,7 +88,7 @@ var DroneMap = function($options) {
           style: {color: color, weight: 1, opacity: 0.6, fillOpacity: 0.1}
         }).addTo(this.map);
 
-        $.each(geoJSON.features, function(f, feature) {
+        geoJSON.features.forEach(function(feature) {
           var placeName = feature.properties.name || feature.properties['INSTALLATI'] || feature.properties['PARKNAME'];
           var center = turf.centroid(feature);
 

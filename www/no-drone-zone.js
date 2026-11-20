@@ -14,8 +14,8 @@ var NoDroneZone = function($options) {
 
       this.watcher = new LocationWatcher();
 
-      this.maxDistance = parseFloat($('#max-distance').val());
-      this.units = $('#units').val();
+      this.maxDistance = parseFloat(document.getElementById('max-distance').value);
+      this.units = document.getElementById('units').value;
 
       this.initEvents();
 
@@ -23,29 +23,33 @@ var NoDroneZone = function($options) {
     },
 
     initEvents: function() {
-      $('#max-distance').on('input change', function() {
-        this.maxDistance = parseFloat($('#max-distance').val());
+      var maxDistance = document.getElementById('max-distance');
+      var onMaxDistance = function() {
+        this.maxDistance = parseFloat(maxDistance.value);
         this.updateNearest();
-      }.bind(this));
+      }.bind(this);
+      maxDistance.addEventListener('input', onMaxDistance);
+      maxDistance.addEventListener('change', onMaxDistance);
 
-      $('#units').on('change', function() {
-        this.units = $('#units').val();
+      var units = document.getElementById('units');
+      units.addEventListener('change', function() {
+        this.units = units.value;
         this.updateNearest();
       }.bind(this));
     },
 
     showPosition: function(position) {
-      $('#latitude').text('Latitude: ' + position.coords.latitude.toPrecision(5) + '\u00b0');
-      $('#longitude').text('Longitude: ' + position.coords.longitude.toPrecision(5) + '\u00b0');
-      $('#accuracy').text('Accuracy: \u00b1' + position.coords.accuracy + 'm (95% confidence)');
-      $('#altitude').text(position.coords.altitude != null ? 'Altitude: ' + position.coords.altitude + 'm' : '');
-      $('#altitudeAccuracy').text(position.coords.altitudeAccuracy != null ? 'Altitude Accuracy: \u00b1' + position.coords.altitudeAccuracy + 'm (95% confidence)' : '');
-      $('#time').text('Time: ' + new Date(position.timestamp));
+      document.getElementById('latitude').textContent = 'Latitude: ' + position.coords.latitude.toPrecision(5) + '\u00b0';
+      document.getElementById('longitude').textContent = 'Longitude: ' + position.coords.longitude.toPrecision(5) + '\u00b0';
+      document.getElementById('accuracy').textContent = 'Accuracy: \u00b1' + position.coords.accuracy + 'm (95% confidence)';
+      document.getElementById('altitude').textContent = position.coords.altitude != null ? 'Altitude: ' + position.coords.altitude + 'm' : '';
+      document.getElementById('altitudeAccuracy').textContent = position.coords.altitudeAccuracy != null ? 'Altitude Accuracy: \u00b1' + position.coords.altitudeAccuracy + 'm (95% confidence)' : '';
+      document.getElementById('time').textContent = 'Time: ' + new Date(position.timestamp);
     },
 
     showNearest: function(nearest) {
-      var ul = $('<ul/>');
-      $.each(nearest, function(i, place) {
+      var ul = document.createElement('ul');
+      nearest.forEach(function(place) {
         var className = place.distance > 0 ? 'outside' : 'inside';
         var distance = place.distance > 0
           ? place.distance.toPrecision(3) + ' ' + place.units + ' away from '
@@ -53,28 +57,30 @@ var NoDroneZone = function($options) {
         var placeName = place.feature.properties.name || place.feature.properties['INSTALLATI'] || place.feature.properties['PARKNAME'];
         //var text = distance + placeName;
 
-        var link = $('<a/>', {
-          href: '#',
-          text: placeName
-        }).on('click', function(e) {
+        var link = document.createElement('a');
+        link.setAttribute('href', '#');
+        link.textContent = placeName;
+        link.addEventListener('click', function(e) {
           e.preventDefault();
           this.map.showInfo(placeName);
         }.bind(this));
 
-        var li = $('<li/>', {
-          text: distance
-        }).addClass(className).append(link);
+        var li = document.createElement('li');
+        li.textContent = distance;
+        li.classList.add(className);
+        li.append(link);
 
         ul.append(li);
       }.bind(this));
-      $('#nearest').empty().append(ul);
+      document.getElementById('nearest').replaceChildren(ul);
 
-      $('#source').show();
+      // index.css hides it until the list loads
+      document.getElementById('source').style.display = 'block';
     },
 
     start: function() {
       if (!navigator.geolocation) {
-        $('#content').html('Geolocation is required for this demo. Try a <a href="https://www.google.com/chrome/browser/">different browser</a>.');
+        document.getElementById('content').innerHTML = 'Geolocation is required for this demo. Try a <a href="https://www.google.com/chrome/browser/">different browser</a>.';
         return;
       }
 
@@ -87,7 +93,7 @@ var NoDroneZone = function($options) {
       }, function(geoJSONs, err) {
         if (err) {
           console.error(err);
-          $('#nearest').text('Error loading: ' + (err.statusText || err));
+          document.getElementById('nearest').textContent = 'Error loading: ' + (err.statusText || err);
           return;
         }
 
@@ -96,7 +102,7 @@ var NoDroneZone = function($options) {
         this.watcher.startWatching(function(position, err) {
           if (err) {
             console.error(err);
-            $('#time').text('Could not get your location: ' + err.message);
+            document.getElementById('time').textContent = 'Could not get your location: ' + err.message;
             return;
           }
 
