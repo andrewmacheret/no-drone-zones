@@ -67,9 +67,9 @@ var NoDroneZone = function($options) {
       var ul = document.createElement('ul');
       nearest.forEach(function(place) {
         var className = place.distance > 0 ? 'outside' : 'inside';
-        var distance = place.distance > 0
-          ? place.distance.toPrecision(3) + ' ' + place.units + ' away from '
-          : (-place.distance).toPrecision(3) + ' ' + place.units + ' inside ';
+        var unit = place.units === 'miles' ? 'mi' : 'km';
+        var abs = Math.abs(place.distance);
+        var distance = (abs < 9.95 ? abs.toFixed(1) : Math.round(abs)) + ' ' + unit + (place.distance > 0 ? '' : ' inside');
         var placeName = place.feature.properties.name || place.feature.properties['INSTALLATI'] || place.feature.properties['PARKNAME'];
         //var text = distance + placeName;
 
@@ -81,10 +81,15 @@ var NoDroneZone = function($options) {
           this.map.showInfo(placeName);
         }.bind(this));
 
+        link.title = placeName;
+
+        var span = document.createElement('span');
+        span.className = 'distance';
+        span.textContent = distance;
+
         var li = document.createElement('li');
-        li.textContent = distance;
         li.classList.add(className);
-        li.append(link);
+        li.append(link, span);
 
         ul.append(li);
       }.bind(this));

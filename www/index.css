@@ -58,7 +58,7 @@ body {
   z-index: 1000;
   top: 12px;
   left: 56px;
-  width: min(360px, calc(100vw - 68px));
+  width: min(400px, calc(100vw - 68px));
   max-height: calc(100dvh - 48px);
   overflow: auto;
   box-sizing: border-box;
@@ -80,8 +80,8 @@ body {
 }
 
 .logo {
-  width: 36px;
-  height: 36px;
+  height: 40px;
+  width: auto;
 }
 
 h1 {
@@ -172,7 +172,22 @@ a:focus-visible {
 }
 
 #nearest li {
+  display: flex;
+  gap: 12px;
   padding: 4px 0;
+}
+
+#nearest li a {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.distance {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .inside {
