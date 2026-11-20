@@ -1,92 +1,218 @@
-html {
-  font-family: Helvetica, Arial, sans-serif;
+/* Same look as the cube, Monty Hall and NHL pages, with a light version for light mode */
+
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --panel: rgb(15 23 42 / 0.82);
+  --text: #e2e8f0;
+  --bright: #f1f5f9;
+  --muted: #94a3b8;
+  --border: rgb(255 255 255 / 0.1);
+  --control: rgb(255 255 255 / 0.08);
+  --control-border: rgb(255 255 255 / 0.14);
+  --shadow: 0 20px 50px rgb(0 0 0 / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.06);
+  --link: #c4b5fd;
+  --link-hover: #ddd6fe;
+  --focus: #a5b4fc;
+  --inside: #fca5a5;
+  --outside: #fcd34d;
+  --error: #fff1f2;
+  --error-bg: rgb(220 38 38 / 0.55);
+  --error-border: rgb(248 113 113 / 0.8);
 }
 
-html, body {
-  margin  : 0;
-  padding : 0;
+@media (prefers-color-scheme: light) {
+  :root {
+    --panel: rgb(255 255 255 / 0.88);
+    --text: #334155;
+    --bright: #0f172a;
+    --muted: #64748b;
+    --border: rgb(15 23 42 / 0.08);
+    --control: rgb(255 255 255 / 0.8);
+    --control-border: rgb(15 23 42 / 0.15);
+    --shadow: 0 20px 50px rgb(15 23 42 / 0.15), inset 0 1px 0 rgb(255 255 255 / 0.8);
+    --link: #6d28d9;
+    --link-hover: #7c3aed;
+    --focus: #6366f1;
+    --inside: #b91c1c;
+    --outside: #b45309;
+    --error: #7f1d1d;
+    --error-bg: rgb(220 38 38 / 0.15);
+    --error-border: rgb(220 38 38 / 0.6);
+  }
 }
 
-#content {
-  float: left;
-  width: 46%;
+html,
+body {
   margin: 0;
-  padding: 2%;
+  height: 100%;
 }
 
 #map {
-  float: right;
-  width: 50%;
-  height: 100vh;
-  margin: 0;
-  padding: 0;
+  position: fixed;
+  inset: 0;
 }
 
-#position-header, #nearest-header {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 10px;
+#panel {
+  position: absolute;
+  z-index: 1000;
+  top: 12px;
+  left: 56px;
+  width: min(360px, calc(100vw - 68px));
+  max-height: calc(100dvh - 48px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  width: 36px;
+  height: 36px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--bright);
+}
+
+.status {
+  margin-top: 10px;
+  color: var(--muted);
+}
+
+.status.error {
+  padding: 10px 12px 10px 38px;
+  border: 1px solid var(--error-border);
+  border-radius: 10px;
+  background: var(--error-bg);
+  color: var(--error);
+  font-weight: 600;
+  position: relative;
+}
+
+.status.error::before {
+  content: '\26A0';
+  position: absolute;
+  left: 12px;
+  top: 8px;
+  font-size: 18px;
+}
+
+#position {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 #nearest-wrapper {
-  margin-top: 20px;
+  margin-top: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
 }
 
-#nearest {
-  margin-top: 10px;
+summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--bright);
 }
 
-#source {
-  margin-top: 20px;
-  font-size: 12px;
-  display: none;
-}
-
-input, select {
-  font-size: 16px;
-  font-family: Helvetica, Arial, sans-serif;
-}
-
-#distance-wrapper, #units-wrapper {
+.count {
   display: inline-block;
+  min-width: 1.4em;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--control);
+  border: 1px solid var(--control-border);
+  text-align: center;
+  font-size: 12px;
+}
+
+input,
+select {
+  font: inherit;
+  color: inherit;
+  background: var(--control);
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  padding: 2px 6px;
 }
 
 #max-distance {
-  width: 40px;
-}
-#units {
+  width: 4em;
 }
 
-li {
-  list-style-type: none;
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+#nearest ul {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+#nearest li {
+  padding: 4px 0;
 }
 
 .inside {
-  color: red;
+  color: var(--inside);
 }
 
 .outside {
-  color: orange;
+  color: var(--outside);
 }
 
-#drone {
-  float: right;
+.empty {
+  margin: 8px 0 0;
+  color: var(--muted);
 }
 
-#drone img {
-  width: 120px;
+a {
+  color: var(--link);
 }
 
+a:hover {
+  color: var(--link-hover);
+}
+
+#source {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* On phones the panel sits along the bottom so the map stays visible */
 @media (max-width: 700px) {
-  #content, #map {
-    float: none;
-    width: auto;
-  }
-  #content {
-    padding: 4%;
-  }
-  #map {
-    height: 70vh;
+  #panel {
+    top: auto;
+    bottom: 24px;
+    left: 8px;
+    width: calc(100vw - 16px);
+    max-height: 50dvh;
   }
 }
 
+.fields {
+  margin-top: 8px;
+}

@@ -35,49 +35,37 @@
 </head>
 
 <body>
-<div id="body-wrapper">
-  
-  <div id="content">
-    
-    <div id="drone"><img src="no-drone-zone.png" alt="No drone zone sign"></div>
-    
-    <div id="position">
-      <div id="position-header">Current location</div>
-      <div id="latitude"></div>
-      <div id="longitude"></div>
-      <div id="accuracy"></div>
-      <div id="altitude"></div>
-      <div id="altitudeAccuracy"></div>
-      <div id="time">Loading...</div>
-    </div>
+<div id="map"></div>
 
-    <div id="nearest-wrapper">
-      <div id="nearest-header">
-        No-drone zones
-      </div>
+<aside id="panel">
+  <header class="header">
+    <img src="no-drone-zone.png" alt="" class="logo">
+    <h1>Nearby No-Drone Zones</h1>
+  </header>
 
-      <div id="fields">
-        <div id="distance-wrapper">
-          Within:
-          <input id="max-distance" value="50" type="number" min="0">
-        </div>
-        <div id="units-wrapper">
-          <select id="units">
-            <option value="kilometers" selected="selected">kilometers</option>
-            <option value="miles">miles</option>
-          </select>
-        </div>
-      </div>
-      
-      <div id="nearest">Loading...</div>
+  <div id="status" class="status" role="status">Finding your location&hellip;</div>
 
-    </div>
-
-    <div id="source">Source: <a href="https://github.com/mapbox/drone-feedback/tree/master/sources/geojson">https://github.com/mapbox/drone-feedback/tree/master/sources/geojson</a></div>
+  <div id="position" hidden>
+    <div id="latitude"></div>
+    <div id="longitude"></div>
+    <div id="accuracy"></div>
+    <div id="altitude"></div>
+    <div id="altitudeAccuracy"></div>
+    <div id="time"></div>
   </div>
 
-  <div id="map"></div>
-
-</div>
+  <details id="nearest-wrapper" hidden>
+    <summary>Nearby zones <span id="nearest-count" class="count"></span></summary>
+    <div class="fields">Within
+      <input id="max-distance" value="50" type="number" min="0" aria-label="Distance">
+      <select id="units" aria-label="Units">
+        <option value="kilometers" selected="selected">km</option>
+        <option value="miles">miles</option>
+      </select>
+    </div>
+    <div id="nearest"></div>
+    <div id="source">Source: <a href="https://github.com/mapbox/drone-feedback/tree/master/sources/geojson">mapbox/drone-feedback</a></div>
+  </details>
+</aside>
 </body>
 </html>
