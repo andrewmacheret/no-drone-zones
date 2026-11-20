@@ -16,21 +16,37 @@ var Geo = function($options) {
     loadJSONs: function(options, callback) {
       var urls = options.urls;
 
-      var promises = [];
-      $.each(urls, function(i, url) {
-        promises.push($.getJSON(url));
-      });
+      var promises = urls.map(function(url) {
+        return this.loadJSON(url);
+      }.bind(this));
 
-      return $.when.apply(
-        $, promises
-      ).fail(function(err) {
-        callback && callback(null, err);
-      }).done(function() {
-        $.each(arguments, function(i, arg) {
-          this.geoJSONs.push(arg[0]);
+      return Promise.all(promises).then(function(results) {
+        results.forEach(function(result) {
+          this.geoJSONs.push(result);
         }.bind(this));
         callback && callback(this.geoJSONs);
-      }.bind(this));
+      }.bind(this), function(err) {
+        callback && callback(null, err);
+      });
+    },
+
+    // fetch JSON, failing on HTTP errors and bad JSON too
+    // err.statusText is set so the page can show why it failed
+    loadJSON: function(url) {
+      return fetch(url).then(function(response) {
+        if (!response.ok) {
+          var err = new Error(response.status + ' ' + response.statusText);
+          err.statusText = response.statusText || 'error';
+          throw err;
+        }
+        return response.json().catch(function(err) {
+          err.statusText = 'parsererror';
+          throw err;
+        });
+      }, function(err) {
+        err.statusText = 'error';
+        throw err;
+      });
     },
 
     getJSONs: function() {
@@ -47,8 +63,8 @@ var Geo = function($options) {
       
       //console.log(new Date());
 
-      $.each(this.geoJSONs, function(g, geoJSON) {
-        $.each(geoJSON.features, function(f, feature) {
+      this.geoJSONs.forEach(function(geoJSON) {
+        geoJSON.features.forEach(function(feature) {
           // optimize by only checking locations within 10 * maxDistance
           var center = turf.center(feature);
           var distance = turf.distance(point, center, {units: units});
