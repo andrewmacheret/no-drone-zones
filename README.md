@@ -22,7 +22,7 @@ The page downloads all the zone data up front, about 14 MB, so it can take a few
 
 ## How it works
 
-It's a static page in `www/` that uses [jQuery](https://jquery.com/), the [Google Maps JavaScript API](https://developers.google.com/maps/documentation/javascript), and [Turf.js](https://turfjs.org/) for the distance math. The zones are the GeoJSON files from [Mapbox's drone-feedback data](https://github.com/mapbox/drone-feedback/tree/master/sources/geojson), copied into `www/`.
+It's a static page in `www/` that uses [jQuery](https://jquery.com/), [Leaflet](https://leafletjs.com/) with [OpenStreetMap](https://www.openstreetmap.org/) tiles for the map, and [Turf.js](https://turfjs.org/) for the distance math. No API keys are needed. The zones are the GeoJSON files from [Mapbox's drone-feedback data](https://github.com/mapbox/drone-feedback/tree/master/sources/geojson), copied into `www/`.
 
 To run it locally:
 
