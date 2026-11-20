@@ -25,10 +25,13 @@ jobs:
             gzip -9 -n -c "$f" > "$f.gz"
             mv "$f.gz" "$f"
           done
-      - run: aws s3 sync www s3://andrewmacheret.com/projects/no-drone-zones --exclude '*.geojson'
+      # Without a cache-control header, browsers can keep old files for months
       - run: |
           aws s3 sync www s3://andrewmacheret.com/projects/no-drone-zones \
-            --exclude '*' --include '*.geojson' \
+            --exclude '*.geojson' --cache-control max-age=300
+      - run: |
+          aws s3 sync www s3://andrewmacheret.com/projects/no-drone-zones \
+            --exclude '*' --include '*.geojson' --cache-control max-age=300 \
             --content-type application/geo+json --content-encoding gzip
       - name: Invalidate CloudFront cache
         if: vars.CLOUDFRONT_DISTRIBUTION_ID != ''
