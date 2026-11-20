@@ -1,6 +1,6 @@
 "use strict";
 
-// Don't call this Map. That would replace the browser's built-in Map, which Google Maps needs.
+// Don't call this Map. That would replace the browser's built-in Map.
 var DroneMap = function($options) {
   var $public = this;
   var $private = {
@@ -9,31 +9,19 @@ var DroneMap = function($options) {
     init: function() {
       if (!$options) $options = {};
       this.mapId = $options.mapId;
-      this.mapOptions = $options.mapOptions || {
-        zoom: 9
-      };
-      this.centerMarkerOptions = $options.centerMarkerOptions || {
-        clickable: false,
-        flat: true,
-        draggable: false,
-        cursor: 'pointer',
-        optimized: false,
-        title: 'Current Location',
-        zIndex: 2,
-        icon: {
-          url: 'gpsloc.png',
-          anchor: new google.maps.Point(7,7),
-          scaledSize: new google.maps.Size(15,15)
-        }
-      };
+      this.zoom = $options.zoom || 9;
+      this.centerIcon = L.icon({
+        iconUrl: 'gpsloc.png',
+        iconSize: [15, 15],
+        iconAnchor: [7, 7]
+      });
       this.centerCircleOptions = $options.centerCircleOptions || {
-        clickable: false,
-        strokeColor: '1bb6ff',
-        strokeOpacity: 0.4,
-        strokeWeight: 1,
-        fillColor: '61a0bf',
-        fillOpacity: 0.4,
-        zIndex: 1
+        interactive: false,
+        color: '#1bb6ff',
+        opacity: 0.4,
+        weight: 1,
+        fillColor: '#61a0bf',
+        fillOpacity: 0.4
       };
 
       $public.setPosition = this.setPosition.bind(this);
@@ -41,46 +29,47 @@ var DroneMap = function($options) {
       $public.showError = this.showError.bind(this);
       $public.showInfo = this.showInfo.bind(this);
 
-      var mapContainer = $('#' + this.mapId)[0];
-      this.map = new google.maps.Map(mapContainer, this.mapOptions);
+      // Canvas is much faster than SVG for thousands of zones
+      this.map = L.map(this.mapId, {preferCanvas: true}).setView([39.8, -98.6], 4);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(this.map);
 
       return this;
     },
 
     setPosition: function(position, callback) {
-      var center = {lat: position.coords.latitude, lng: position.coords.longitude};
-
+      var center = [position.coords.latitude, position.coords.longitude];
 
       if (!this.centerMarker) {
-        this.centerMarkerOptions.position = center;
-        this.centerMarkerOptions.map = this.map;
+        this.centerMarker = L.marker(center, {
+          icon: this.centerIcon,
+          interactive: false,
+          keyboard: false,
+          title: 'Current Location',
+          zIndexOffset: 1000
+        }).addTo(this.map);
 
-        this.centerMarker = new google.maps.Marker(this.centerMarkerOptions);
-
-        // also set the center to the mark
-        this.map.setCenter(center);
+        // also center the map on the first position
+        this.map.setView(center, this.zoom);
       } else {
-        this.centerMarker.setPosition(center);
+        this.centerMarker.setLatLng(center);
       }
 
       if (!this.centerCircle) {
-        this.centerCircleOptions.center = center;
-        this.centerCircleOptions.map = this.map;
-        this.centerCircleOptions.radius = position.coords.accuracy;
-
-        this.centerCircle = new google.maps.Circle(this.centerCircleOptions);        
+        this.centerCircle = L.circle(center, $.extend({radius: position.coords.accuracy}, this.centerCircleOptions))
+          .addTo(this.map);
       } else {
-        this.centerCircle.setCenter(center);
+        this.centerCircle.setLatLng(center);
         this.centerCircle.setRadius(position.coords.accuracy);
       }
 
-      google.maps.event.addListenerOnce(this.map, 'idle', function() {
-        callback && callback();
-      });
+      callback && callback();
     },
 
     showError: function(err) {
-      google.maps.event.trigger(this.map, 'geolocation_error', err);
+      console.error(err);
     },
 
     showInfo: function(placeName) {
@@ -92,50 +81,40 @@ var DroneMap = function($options) {
       var colors = ['red', 'green', 'blue'];
 
       $.each(geoJSONs, function(g, geoJSON) {
-        this.map.data.addGeoJson(geoJSON);
-
         var color = colors[g % colors.length];
-        var icon = {
-          url: 'https://maps.google.com/mapfiles/ms/icons/' + color + '-dot.png'
-        };
-        
+
+        L.geoJSON(geoJSON, {
+          interactive: false,
+          style: {color: color, weight: 1, opacity: 0.6, fillOpacity: 0.1}
+        }).addTo(this.map);
+
         $.each(geoJSON.features, function(f, feature) {
           var placeName = feature.properties.name || feature.properties['INSTALLATI'] || feature.properties['PARKNAME'];
           var center = turf.centroid(feature);
 
-          var marker = new google.maps.Marker({
-            position: {lat: center.geometry.coordinates[1], lng: center.geometry.coordinates[0]},
-            map: this.map,
-            title: placeName,
-            icon: icon
-          });
+          // Use a text node so odd characters in place names can't become HTML
+          var content = document.createElement('div');
+          content.textContent = placeName;
 
-          var infoWindow = new google.maps.InfoWindow({
-            content: placeName
-          });
-          var showInfo = function() {
-            var wasOpen = this.openWindow === infoWindow;
-            if (this.openWindow) {
-              this.openWindow.close();
-              this.openWindow = null;
+          var marker = L.circleMarker([center.geometry.coordinates[1], center.geometry.coordinates[0]], {
+            radius: 6,
+            color: 'white',
+            weight: 1.5,
+            fillColor: color,
+            fillOpacity: 1
+          }).bindPopup(content).addTo(this.map);
+
+          this.showInfos[placeName] = function() {
+            if (marker.isPopupOpen()) {
+              marker.closePopup();
+            } else {
+              marker.openPopup();
             }
-            if (wasOpen) return;
-
-            infoWindow.open(this.map, marker);
-
-            this.openWindow = infoWindow;
           };
-
-          marker.addListener('click', showInfo.bind(this));
-
-          this.showInfos[placeName] = showInfo;
-
         }.bind(this));
       }.bind(this));
 
-      google.maps.event.addListenerOnce(this.map, 'idle', function() {
-        callback && callback();
-      });
+      callback && callback();
     }
   }.init();
 };
