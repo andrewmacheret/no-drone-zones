@@ -26,11 +26,12 @@ jobs:
             mv "$f.gz" "$f"
           done
       # Without a cache-control header, browsers can keep old files for months
+      # Everything under projects/no-drone-zones comes from this repo, so --delete is safe
       - run: |
-          aws s3 sync www s3://andrewmacheret.com/projects/no-drone-zones \
+          aws s3 sync www s3://andrewmacheret.com/projects/no-drone-zones --delete \
             --exclude '*.geojson' --cache-control max-age=300
       - run: |
-          aws s3 sync www s3://andrewmacheret.com/projects/no-drone-zones \
+          aws s3 sync www s3://andrewmacheret.com/projects/no-drone-zones --delete \
             --exclude '*' --include '*.geojson' --cache-control max-age=300 \
             --content-type application/geo+json --content-encoding gzip
       - name: Invalidate CloudFront cache
