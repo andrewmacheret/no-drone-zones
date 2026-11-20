@@ -8,7 +8,7 @@ var NoDroneZone = function($options) {
 
       this.geo = new Geo();
 
-      this.map = new Map({
+      this.map = new DroneMap({
         mapId: 'map'
       });
 
@@ -23,18 +23,12 @@ var NoDroneZone = function($options) {
     },
 
     initEvents: function() {
-      $('#max-distance').keypress(function() {
-        this.maxDistance = parseFloat($('#max-distance').val());
-        this.updateNearest();
-      }.bind(this)).change(function() {
+      $('#max-distance').on('input change', function() {
         this.maxDistance = parseFloat($('#max-distance').val());
         this.updateNearest();
       }.bind(this));
 
-      $('#units').keypress(function() {
-        this.units = $('#units').val();
-        this.updateNearest();
-      }.bind(this)).change(function() {
+      $('#units').on('change', function() {
         this.units = $('#units').val();
         this.updateNearest();
       }.bind(this));
@@ -45,7 +39,7 @@ var NoDroneZone = function($options) {
       $('#longitude').text('Longitude: ' + position.coords.longitude.toPrecision(5) + '\u00b0');
       $('#accuracy').text('Accuracy: \u00b1' + position.coords.accuracy + 'm (95% confidence)');
       $('#altitude').text(position.coords.altitude != null ? 'Altitude: ' + position.coords.altitude + 'm' : '');
-      $('#altitude').text(position.coords.altitudeAccuracy != null ? 'Altitude Accuracy: \u00b1' + position.coords.altitudeAccuracy + 'm (95% confidence)' : '');
+      $('#altitudeAccuracy').text(position.coords.altitudeAccuracy != null ? 'Altitude Accuracy: \u00b1' + position.coords.altitudeAccuracy + 'm (95% confidence)' : '');
       $('#time').text('Time: ' + new Date(position.timestamp));
     },
 
@@ -62,7 +56,8 @@ var NoDroneZone = function($options) {
         var link = $('<a/>', {
           href: '#',
           text: placeName
-        }).click(function() {
+        }).on('click', function(e) {
+          e.preventDefault();
           this.map.showInfo(placeName);
         }.bind(this));
 
@@ -91,8 +86,8 @@ var NoDroneZone = function($options) {
         ]
       }, function(geoJSONs, err) {
         if (err) {
-          console.error(this.watcher, err);
-          $('#distance').text('Error loading: ' + (err.statusText || err));
+          console.error(err);
+          $('#nearest').text('Error loading: ' + (err.statusText || err));
           return;
         }
 
@@ -100,8 +95,8 @@ var NoDroneZone = function($options) {
 
         this.watcher.startWatching(function(position, err) {
           if (err) {
-            console.error(this.watcher, err);
-            this.map.showError(err);
+            console.error(err);
+            $('#time').text('Could not get your location: ' + err.message);
             return;
           }
 

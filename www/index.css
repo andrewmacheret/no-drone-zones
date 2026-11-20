@@ -77,3 +77,16 @@ li {
   width: 120px;
 }
 
+@media (max-width: 700px) {
+  #content, #map {
+    float: none;
+    width: auto;
+  }
+  #content {
+    padding: 4%;
+  }
+  #map {
+    height: 70vh;
+  }
+}
+

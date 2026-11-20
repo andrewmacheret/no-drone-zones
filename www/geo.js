@@ -51,7 +51,7 @@ var Geo = function($options) {
         $.each(geoJSON.features, function(f, feature) {
           // optimize by only checking locations within 10 * maxDistance
           var center = turf.center(feature);
-          var distance = turf.distance(point, center, units);
+          var distance = turf.distance(point, center, {units: units});
           if (distance <= maxDistance * 10) {
 
             var actualDistance = this.distanceToPolygon({
@@ -87,25 +87,16 @@ var Geo = function($options) {
 
       // if the point is inside the polygon, distance will be negative (to leave!)
       var sign = 1;
-      if (turf.inside(startingPoint, feature)) {
+      if (turf.booleanPointInPolygon(startingPoint, feature)) {
         sign = -1;
       }
 
-      // find each line in each polygon...
+      // the distance to the polygon is the distance to its closest edge
+      // (works for polygons with holes and multipolygons too)
       var min = null;
-      $.each(feature.geometry.coordinates, function(i, coordinate) {
-        $.each(coordinate, function(j, point1) {
-          var point2 = coordinate[(j + 1) % coordinate.length];
-
-          // compute the closest point on the line
-          // the distance from the starting point to the polygon is the distance to this point
-          var line = turf.linestring([point1, point2]);
-          var closestPointOnLine = turf.pointOnLine(line, startingPoint);
-          var distance = turf.distance(startingPoint, closestPointOnLine, units);
-
-          // adjust the minimum
-          if (min == null || min > distance) min = distance;
-        });
+      turf.flattenEach(turf.polygonToLine(feature), function(line) {
+        var distance = turf.pointToLineDistance(startingPoint, line, {units: units});
+        if (min == null || min > distance) min = distance;
       });
 
       // the minimum is the result
