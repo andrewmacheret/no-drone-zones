@@ -1,6 +1,7 @@
 "use strict";
 
-var Map = function($options) {
+// Don't call this Map. That would replace the browser's built-in Map, which Google Maps needs.
+var DroneMap = function($options) {
   var $public = this;
   var $private = {
     showInfos: {},
@@ -83,8 +84,8 @@ var Map = function($options) {
     },
 
     showInfo: function(placeName) {
-      var fn = this.showInfos[placeName].bind(this);
-      if (fn) fn();
+      var fn = this.showInfos[placeName];
+      if (fn) fn.call(this);
     },
 
     addGeoJSONs: function(geoJSONs, callback) {
@@ -95,7 +96,7 @@ var Map = function($options) {
 
         var color = colors[g % colors.length];
         var icon = {
-          url: 'http://maps.google.com/mapfiles/ms/icons/' + color + '-dot.png'
+          url: 'https://maps.google.com/mapfiles/ms/icons/' + color + '-dot.png'
         };
         
         $.each(geoJSON.features, function(f, feature) {
@@ -113,11 +114,12 @@ var Map = function($options) {
             content: placeName
           });
           var showInfo = function() {
-            if (this.openWindow === infoWindow || this.openWindow != null) {
+            var wasOpen = this.openWindow === infoWindow;
+            if (this.openWindow) {
               this.openWindow.close();
               this.openWindow = null;
-              return;
             }
+            if (wasOpen) return;
 
             infoWindow.open(this.map, marker);
 

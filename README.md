@@ -1,22 +1,41 @@
-# no-drone-zones
+# No-Drone Zones
 
-[![Build Status](https://travis-ci.org/andrewmacheret/no-drone-zones.svg?branch=master)](https://travis-ci.org/andrewmacheret/no-drone-zones) [![License](https://img.shields.io/badge/license-MIT-lightgray.svg)](https://github.com/andrewmacheret/no-drone-zones/blob/master/LICENSE.md)
+[![Deploy](https://github.com/andrewmacheret/no-drone-zones/actions/workflows/deploy.yml/badge.svg)](https://github.com/andrewmacheret/no-drone-zones/actions/workflows/deploy.yml) [![License](https://img.shields.io/badge/license-MIT-lightgray.svg)](https://github.com/andrewmacheret/no-drone-zones/blob/master/LICENSE.md)
 
-A web-based map of known no-drone-zones in your area using [Mapbox drone data](https://github.com/mapbox/drone-feedback/tree/master/sources/geojson), [Google Maps API](https://developers.google.com/maps/), [Turf.js](http://turfjs.org/), and [jQuery](https://jquery.com/).
+Shows the no-drone zones near your current location, on a map and as a list sorted by distance.
 
-See it running at [https://andrewmacheret.com/projects/no-drone-zones](https://andrewmacheret.com/projects/no-drone-zones).
+Live at [andrewmacheret.com/projects/no-drone-zones](https://andrewmacheret.com/projects/no-drone-zones/).
 
-![Drone image](www/drone.png?raw=true "Drone image")
+![Screenshot of No-Drone Zones near Seattle](www/screenshot.jpg)
 
-Prereqs:
-* A web server (like [Apache](https://httpd.apache.org/)).
+## Usage
 
-Installation steps:
-* `git clone <clone url>`
+Open the page and allow location access. It covers three kinds of zones in the US:
 
-Test it:
-* Open `index.html` in a browser.
- * For testing purposes, if you don't have a web server, running `python -m SimpleHTTPServer` in the project directory and navigating to [http://localhost:8000](http://localhost:8000) should do the trick.
-* After a long loading period (~10 seconds on desktop browsers, longer on mobile), you should see a google map and the location of nearby drone zones.
-* To troubleshoot, look for javascript errors in the browser console.
+- Airports, with a 5 mile radius (red pins)
+- Military bases (green pins)
+- National parks (blue pins)
 
+The list shows every zone within the distance you pick, in kilometers or miles. Orange entries are how far away a zone is. Red entries mean you're inside it, with the distance to its edge. Click a name to show it on the map.
+
+The page downloads all the zone data up front, about 14 MB, so it can take a few seconds to load on a phone.
+
+## How it works
+
+It's a static page in `www/` that uses [jQuery](https://jquery.com/), the [Google Maps JavaScript API](https://developers.google.com/maps/documentation/javascript), and [Turf.js](https://turfjs.org/) for the distance math. The zones are the GeoJSON files from [Mapbox's drone-feedback data](https://github.com/mapbox/drone-feedback/tree/master/sources/geojson), copied into `www/`.
+
+To run it locally:
+
+```
+python3 -m http.server -d www
+```
+
+Then open [http://localhost:8000](http://localhost:8000). Browsers allow location access on `localhost`, so this works without HTTPS.
+
+## Deploy
+
+Pushes to `master` copy `www/` to `s3://andrewmacheret.com/projects/no-drone-zones` and clear the CloudFront cache through GitHub Actions (see `.github/workflows/deploy.yml`). The workflow signs in to AWS with GitHub OIDC using the IAM role in the `AWS_ROLE_ARN` repo variable.
+
+The workflow gzips the GeoJSON files before uploading them, which cuts the download from 43 MB to about 14 MB. CloudFront won't compress files that big on its own.
+
+`www/screenshot.jpg` is used for this README and for link previews (`og:image`).

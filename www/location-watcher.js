@@ -31,7 +31,7 @@ var LocationWatcher = function($options) {
     },
 
     stopWatching: function() {
-      if (watchId != null) {
+      if (this.watchId != null) {
         navigator.geolocation.clearWatch(this.watchId);
         this.watchId = null;
       }
