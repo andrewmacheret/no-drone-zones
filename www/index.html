@@ -41,27 +41,31 @@
 <div id="map"></div>
 
 <aside id="panel" class="overlay">
-  <header class="header title-row">
-    <a class="home" href="https://andrewmacheret.com/">
-      <img src="https://andrewmacheret.com/favicon.svg" alt="andrewmacheret.com" width="20" height="20">
-    </a>
-    <span class="slash" aria-hidden="true">/</span>
+  <div class="intro">
+    <div class="intro-text">
+      <header class="title-row">
+        <a class="home" href="https://andrewmacheret.com/">
+          <img src="https://andrewmacheret.com/favicon.svg" alt="andrewmacheret.com" width="20" height="20">
+        </a>
+        <span class="slash" aria-hidden="true">/</span>
+        <h1>Nearby No-Drone Zones</h1>
+      </header>
+
+      <ul id="legend" class="legend"></ul>
+
+      <div id="status" class="status" role="status">Finding your location&hellip;</div>
+      <div id="zoom-hint" class="hint" hidden>Zoom in to see zones on the map.</div>
+
+      <div id="position" hidden>
+        <div id="latitude"></div>
+        <div id="longitude"></div>
+        <div id="accuracy"></div>
+        <div id="altitude"></div>
+        <div id="altitudeAccuracy"></div>
+        <div id="time"></div>
+      </div>
+    </div>
     <img src="no-drone-zone.png" alt="" class="logo">
-    <h1>Nearby No-Drone Zones</h1>
-  </header>
-
-  <ul id="legend" class="legend"></ul>
-
-  <div id="status" class="status" role="status">Finding your location&hellip;</div>
-  <div id="zoom-hint" class="hint" hidden>Zoom in to see zones on the map.</div>
-
-  <div id="position" hidden>
-    <div id="latitude"></div>
-    <div id="longitude"></div>
-    <div id="accuracy"></div>
-    <div id="altitude"></div>
-    <div id="altitudeAccuracy"></div>
-    <div id="time"></div>
   </div>
 
   <details id="nearest-wrapper" hidden>
