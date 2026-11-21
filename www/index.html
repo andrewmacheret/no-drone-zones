@@ -4,6 +4,7 @@
 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
 
 <!-- open graph -->
 <meta property="og:url" content="https://andrewmacheret.com/projects/no-drone-zones/" />
@@ -30,6 +31,8 @@
 <script src="index.js"></script>
 
 <!-- css -->
+<!-- before Leaflet's CSS so Leaflet's own link and button colors win -->
+<link rel="stylesheet" href="https://andrewmacheret.com/projects.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <link rel="stylesheet" type="text/css" href="index.css">
 </head>
@@ -37,7 +40,7 @@
 <body>
 <div id="map"></div>
 
-<aside id="panel">
+<aside id="panel" class="overlay">
   <header class="header">
     <img src="no-drone-zone.png" alt="" class="logo">
     <h1>Nearby No-Drone Zones</h1>
@@ -64,8 +67,15 @@
       </select>
     </div>
     <div id="nearest"></div>
-    <div id="source">Source: <a href="https://github.com/mapbox/drone-feedback/tree/master/sources/geojson">mapbox/drone-feedback</a></div>
   </details>
+
+  <footer class="footer">
+    <a href="https://andrewmacheret.com/">More projects</a>
+    <span aria-hidden="true">&middot;</span>
+    <span>Zones from <a href="https://github.com/mapbox/drone-feedback/tree/master/sources/geojson">mapbox/drone-feedback</a></span>
+    <span aria-hidden="true">&middot;</span>
+    <a href="https://github.com/andrewmacheret/no-drone-zones">Source</a>
+  </footer>
 </aside>
 </body>
 </html>

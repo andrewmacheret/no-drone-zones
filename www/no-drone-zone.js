@@ -50,7 +50,7 @@ var NoDroneZone = function($options) {
 
     showStatus: function(text) {
       var status = document.getElementById('status');
-      status.classList.remove('error');
+      status.classList.remove('alert');
       status.textContent = text;
       status.hidden = !text;
     },
@@ -58,7 +58,7 @@ var NoDroneZone = function($options) {
     showError: function(text) {
       var status = document.getElementById('status');
       status.hidden = false;
-      status.classList.add('error');
+      status.classList.add('alert');
       status.setAttribute('role', 'alert');
       status.textContent = text;
     },
