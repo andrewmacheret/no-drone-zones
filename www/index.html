@@ -16,7 +16,7 @@
 <!-- title -->
 <title>Nearby No-Drone Zones</title>
 <script async src="https://andrewmacheret.com/analytics.js"></script>
-<meta name="description" content="A map of the airports, military bases and national parks near you where drones aren't allowed." />
+<meta name="description" content="A map of the airport airspace, national security areas, prohibited areas and national parks near you where drones need permission or aren't allowed, from daily FAA and National Park Service data." />
 <link rel="canonical" href="https://andrewmacheret.com/projects/no-drone-zones/" />
 
 <!-- js libraries -->
@@ -46,7 +46,10 @@
     <h1>Nearby No-Drone Zones</h1>
   </header>
 
+  <ul id="legend" class="legend"></ul>
+
   <div id="status" class="status" role="status">Finding your location&hellip;</div>
+  <div id="zoom-hint" class="hint" hidden>Zoom in to see zones on the map.</div>
 
   <div id="position" hidden>
     <div id="latitude"></div>
@@ -60,7 +63,7 @@
   <details id="nearest-wrapper" hidden>
     <summary>Nearby zones <span id="nearest-count" class="count"></span></summary>
     <div class="fields">Within
-      <input id="max-distance" value="50" type="number" min="0" aria-label="Distance">
+      <input id="max-distance" value="50" type="number" min="0" max="200" aria-label="Distance">
       <select id="units" aria-label="Units">
         <option value="kilometers" selected="selected">km</option>
         <option value="miles">mi</option>
@@ -72,7 +75,7 @@
   <footer class="footer">
     <a href="https://andrewmacheret.com/">More projects</a>
     <span aria-hidden="true">&middot;</span>
-    <span>Zones from <a href="https://github.com/mapbox/drone-feedback/tree/master/sources/geojson">mapbox/drone-feedback</a></span>
+    <span id="data-source">Zones from the FAA and National Park Service</span>
     <span aria-hidden="true">&middot;</span>
     <a href="https://github.com/andrewmacheret/no-drone-zones">Source</a>
   </footer>
