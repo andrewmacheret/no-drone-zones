@@ -20,13 +20,21 @@ body {
   overflow: auto;
 }
 
-.header {
-  justify-content: flex-start;
-  gap: 10px;
+/* the title and status on the left, the no-drone sign in the bottom right */
+.intro {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.intro-text {
+  flex: 1;
+  min-width: 0;
 }
 
 .logo {
-  height: 40px;
+  flex: none;
+  height: 72px;
   width: auto;
 }
 
