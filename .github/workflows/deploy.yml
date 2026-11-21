@@ -1,42 +1,78 @@
-name: Deploy to S3
+name: Test and deploy
 
 on:
   push:
     branches: [master]
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
-  id-token: write
+
+env:
+  FUNCTION_NAME: NoDroneZones
+  RUNTIME: python3.14
+  DB_BUCKET: andrewmacheret-no-drone-zones
+  S3_PATH: s3://andrewmacheret.com/projects/no-drone-zones
+  API_URL: https://no-drone-zones.andrewmacheret.com
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - run: python3 -m unittest -v
+        working-directory: src/lambda
+
+  deploy:
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - run: zip -j lambda.zip src/lambda/main.py src/lambda/zones.py
       - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: us-east-1
-      # The GeoJSON files are too big for CloudFront to compress, so gzip them here
-      - name: Gzip GeoJSON
+      # AWS blocks code updates on old runtimes, so set the runtime first
+      - name: Update runtime and settings
         run: |
-          for f in www/*.geojson; do
-            gzip -9 -n -c "$f" > "$f.gz"
-            mv "$f.gz" "$f"
-          done
+          aws lambda update-function-configuration --function-name "$FUNCTION_NAME" \
+            --runtime "$RUNTIME" --handler main.lambda_handler --timeout 300 --memory-size 512 \
+            --environment "Variables={DB_BUCKET=$DB_BUCKET}" \
+            --output text --query LastUpdateStatus
+          aws lambda wait function-updated --function-name "$FUNCTION_NAME"
+      - name: Update code
+        run: |
+          aws lambda update-function-code --function-name "$FUNCTION_NAME" \
+            --zip-file fileb://lambda.zip \
+            --output text --query LastUpdateStatus
+          aws lambda wait function-updated --function-name "$FUNCTION_NAME"
+      # Builds the database if the sources changed or SCHEMA_VERSION was bumped. A daily schedule also does this.
+      - name: Refresh zones
+        run: |
+          aws lambda invoke --function-name "$FUNCTION_NAME" \
+            --cli-binary-format raw-in-base64-out --payload '{"refresh": true}' \
+            --cli-read-timeout 330 refresh.json \
+            --query FunctionError --output text | tee function-error.txt
+          cat refresh.json
+          grep -qx None function-error.txt
       # Without a cache-control header, browsers can keep old files for months
       # Everything under projects/no-drone-zones comes from this repo, so --delete is safe
-      - run: |
-          aws s3 sync www s3://andrewmacheret.com/projects/no-drone-zones --delete \
-            --exclude '*.geojson' --cache-control max-age=300
-      - run: |
-          aws s3 sync www s3://andrewmacheret.com/projects/no-drone-zones --delete \
-            --exclude '*' --include '*.geojson' --cache-control max-age=300 \
-            --content-type application/geo+json --content-encoding gzip
+      - name: Upload website
+        run: aws s3 sync www "$S3_PATH" --delete --cache-control max-age=300
       - name: Invalidate CloudFront cache
-        if: vars.CLOUDFRONT_DISTRIBUTION_ID != ''
         run: |
           aws cloudfront create-invalidation \
             --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" \
             --paths '/projects/no-drone-zones/*'
+      - name: Smoke test
+        run: |
+          curl -sSf "$API_URL/zones?bbox=-77.2,38.8,-76.9,39" | jq -e '(.features | length > 0) and .built_at'
