@@ -1,6 +1,6 @@
 # No-Drone Zones
 
-[![Test and deploy](https://github.com/andrewmacheret/no-drone-zones/actions/workflows/deploy.yml/badge.svg)](https://github.com/andrewmacheret/no-drone-zones/actions/workflows/deploy.yml) [![License](https://img.shields.io/badge/license-MIT-lightgray.svg)](https://github.com/andrewmacheret/no-drone-zones/blob/master/LICENSE.md)
+[![Test and deploy](https://github.com/andrewmacheret/no-drone-zones/actions/workflows/deploy.yml/badge.svg)](https://github.com/andrewmacheret/no-drone-zones/actions/workflows/deploy.yml) [![Canary](https://github.com/andrewmacheret/no-drone-zones/actions/workflows/canary.yml/badge.svg)](https://github.com/andrewmacheret/no-drone-zones/actions/workflows/canary.yml) [![License](https://img.shields.io/badge/license-MIT-lightgray.svg)](https://github.com/andrewmacheret/no-drone-zones/blob/master/LICENSE.md)
 
 Shows the no-drone zones near your current location, on a map and as a list sorted by distance. The zones come from the FAA and National Park Service and update daily.
 
@@ -46,6 +46,10 @@ python3 -m http.server -d www
 ```
 
 Then open [http://localhost:8000](http://localhost:8000). Browsers allow location access on `localhost`, so this works without HTTPS. Add `?api=<your API URL>` to use a different API.
+
+## Health check
+
+[`/projects/no-drone-zones/healthcheck/`](https://andrewmacheret.com/projects/no-drone-zones/healthcheck/) checks the page and its scripts and styles (including Leaflet and Turf), OpenStreetMap's tiles, and the API's `/healthcheck`, which fails if the daily FAA and NPS refresh failed or didn't run. The Canary workflow (`.github/workflows/canary.yml`) opens it once a day, started by [andrewmacheret/canary](https://github.com/andrewmacheret/canary).
 
 ## Deploy
 

@@ -5,6 +5,7 @@ import os
 import sqlite3
 import tempfile
 import unittest
+from datetime import datetime, timedelta, timezone
 from unittest import mock
 
 import main
@@ -125,6 +126,59 @@ class TestHandler(DbTestCase):
 
   def test_not_found(self):
     self.assertEqual(self.call("-123,37,-122,38", path="/nope")["statusCode"], 404)
+
+
+class TestRefreshEvent(unittest.TestCase):
+  @mock.patch("main.save_status")
+  @mock.patch("main.refresh", return_value={"updated": True, "versions": "airport=1"})
+  def test_saves_status(self, refresh, save_status):
+    self.assertEqual(main.lambda_handler({"refresh": True}, None)["updated"], True)
+    refresh.assert_called_once_with(force=False)
+    save_status.assert_called_once_with({"ok": True, "updated": True})
+
+  @mock.patch("main.save_status")
+  @mock.patch("main.refresh", side_effect=Exception("HTTP Error 429"))
+  def test_saves_the_error(self, _, save_status):
+    with self.assertRaises(Exception):
+      main.lambda_handler({"refresh": True}, None)
+    save_status.assert_called_once_with({"ok": False, "error": "HTTP Error 429"})
+
+
+class TestHealthcheck(DbTestCase):
+  NOW = datetime(2026, 11, 20, 15, tzinfo=timezone.utc)
+
+  def check(self, status):
+    with mock.patch.object(main, "get_db", return_value=self.db), mock.patch.object(main, "load_status", return_value=status):
+      result = main.healthcheck(self.NOW)
+    return result["statusCode"], json.loads(result["body"])
+
+  def ran(self, hours_ago):
+    return (self.NOW - timedelta(hours=hours_ago)).isoformat()
+
+  def test_ok(self):
+    status, body = self.check({"ok": True, "updated": True, "checked_at": self.ran(4)})
+    self.assertEqual(status, 200)
+    self.assertEqual(body["checks"][0]["detail"], "ran 4 hours ago, rebuilt the zones")
+    self.assertTrue(body["checks"][1]["detail"].startswith("5 zones, built "))
+
+  def test_failed_refresh(self):
+    status, body = self.check({"ok": False, "error": "HTTP Error 429", "checked_at": self.ran(4)})
+    self.assertEqual(status, 503)
+    self.assertEqual(body["status"], "fail")
+    self.assertEqual(body["checks"][0]["detail"], "failed 4 hours ago: HTTP Error 429")
+
+  def test_missed_a_day(self):
+    status, body = self.check({"ok": True, "checked_at": self.ran(28)})
+    self.assertEqual(status, 503)
+    self.assertEqual(body["checks"][0]["detail"], "last ran 28 hours ago")
+
+  def test_through_the_handler(self):
+    with mock.patch.object(main, "get_db", return_value=self.db), \
+        mock.patch.object(main, "load_status", side_effect=Exception("NoSuchKey")):
+      result = main.lambda_handler({"rawPath": "/healthcheck"}, None)
+    self.assertEqual(result["statusCode"], 503)
+    self.assertEqual(result["headers"]["Content-Type"], "application/json")
+    self.assertEqual(result["headers"]["Cache-Control"], "no-store")
 
 
 class TestFetch(unittest.TestCase):

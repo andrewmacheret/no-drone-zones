@@ -4,6 +4,7 @@ import json
 import os
 import sqlite3
 import time
+from datetime import datetime, timezone
 
 import zones
 
@@ -14,6 +15,10 @@ LOCAL_DB = "/tmp/zones.sqlite"
 CHECK_SECONDS = 600
 # Biggest box /zones answers, in degrees. Keeps responses to a few MB.
 MAX_SPAN = 10
+# How the last daily refresh went, for /healthcheck
+STATUS_KEY = "status.json"
+# The refresh runs once a day, so anything older means it missed a day
+STATUS_MAX_HOURS = 26
 
 HEADERS = {
   "Content-Type": "application/geo+json",
@@ -31,9 +36,11 @@ _db_checked_at = 0
 def lambda_handler(event, context):
   # The daily schedule sends {"refresh": true}. API Gateway events never have that key.
   if event.get("refresh"):
-    return refresh(force=bool(event.get("force")))
+    return refresh_and_save_status(force=bool(event.get("force")))
 
   path = event.get("rawPath", "/")
+  if path == "/healthcheck":
+    return healthcheck()
   if path != "/zones":
     return error(404, f"Not found: {path}. Try /zones?bbox=west,south,east,north")
 
@@ -117,6 +124,71 @@ def get_db():
     _db_etag = etag
   _db_checked_at = time.time()
   return _db
+
+
+def refresh_and_save_status(force=False):
+  try:
+    result = refresh(force=force)
+  except Exception as ex:
+    save_status({"ok": False, "error": str(ex)})
+    raise
+  save_status({"ok": True, "updated": result["updated"]})
+  return result
+
+
+def save_status(status):
+  import boto3
+  status = {**status, "checked_at": datetime.now(timezone.utc).isoformat()}
+  boto3.client("s3").put_object(Bucket=DB_BUCKET, Key=STATUS_KEY, Body=json.dumps(status),
+                                ContentType="application/json")
+
+
+def load_status():
+  import boto3
+  return json.loads(boto3.client("s3").get_object(Bucket=DB_BUCKET, Key=STATUS_KEY)["Body"].read())
+
+
+def healthcheck(now=None):
+  """GET /healthcheck, for the daily canary (github.com/andrewmacheret/canary).
+  It's public, so it reads how the last refresh went instead of calling the FAA, which limits requests."""
+  now = now or datetime.now(timezone.utc)
+  checks = [run_check("Daily FAA and NPS refresh", lambda: refresh_status(now)), run_check("Zones", zones_status)]
+  ok = all(c["ok"] for c in checks)
+  headers = {**HEADERS, "Content-Type": "application/json", "Cache-Control": "no-store"}
+  return {
+    "statusCode": 200 if ok else 503,
+    "headers": headers,
+    "body": json.dumps({"status": "ok" if ok else "fail", "checks": checks}),
+  }
+
+
+def run_check(name, check):
+  try:
+    return {"name": name, "ok": True, "detail": check()}
+  except Exception as ex:
+    return {"name": name, "ok": False, "detail": str(ex)}
+
+
+def refresh_status(now):
+  try:
+    status = load_status()
+  except Exception as ex:
+    raise RuntimeError(f"couldn't read {STATUS_KEY}: {ex}")
+  hours = (now - datetime.fromisoformat(status["checked_at"])).total_seconds() / 3600
+  if not status["ok"]:
+    raise RuntimeError(f"failed {hours:.0f} hours ago: {status['error']}")
+  if hours > STATUS_MAX_HOURS:
+    raise RuntimeError(f"last ran {hours:.0f} hours ago")
+  return f"ran {hours:.0f} hours ago, {'rebuilt the zones' if status.get('updated') else 'sources unchanged'}"
+
+
+def zones_status():
+  db = get_db()
+  count = db.execute("select count(*) from zones").fetchone()[0]
+  built_at = db.execute("select built_at from info").fetchone()[0]
+  if not count:
+    raise RuntimeError("the database has no zones")
+  return f"{count} zones, built {built_at}"
 
 
 def refresh(force=False):
