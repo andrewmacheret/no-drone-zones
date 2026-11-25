@@ -49,7 +49,7 @@ Then open [http://localhost:8000](http://localhost:8000). Browsers allow locatio
 
 ## Health check
 
-[`/projects/no-drone-zones/healthcheck/`](https://andrewmacheret.com/projects/no-drone-zones/healthcheck/) checks the page and its scripts and styles (including Leaflet and Turf), OpenStreetMap's tiles, and the API's `/healthcheck`, which fails if the daily FAA and NPS refresh failed or didn't run. The Canary workflow (`.github/workflows/canary.yml`) opens it once a day, started by [andrewmacheret/canary](https://github.com/andrewmacheret/canary).
+Once a day, the Canary workflow (`.github/workflows/canary.yml`) checks the page and its scripts and styles (including Leaflet and Turf), OpenStreetMap's tiles, and the API's own health check, which fails if the daily FAA and NPS refresh failed or didn't run. It's started by [andrewmacheret/canary](https://github.com/andrewmacheret/canary).
 
 ## Deploy
 
