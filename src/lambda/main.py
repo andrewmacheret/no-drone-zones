@@ -22,10 +22,13 @@ STATUS_MAX_HOURS = 26
 
 HEADERS = {
   "Content-Type": "application/geo+json",
-  "Access-Control-Allow-Origin": "*",
   # The data changes once a day at most
   "Cache-Control": "public, max-age=3600",
-  "Vary": "Accept-Encoding",
+  # API Gateway adds Access-Control-Allow-Origin for andrewmacheret.com and localhost:8000 only
+  # so a cached response has to be kept per origin
+  "Vary": "Accept-Encoding, Origin",
+  # Keeps Google from listing the API in search results
+  "X-Robots-Tag": "noindex",
 }
 
 _db = None

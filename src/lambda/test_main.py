@@ -107,7 +107,8 @@ class TestHandler(DbTestCase):
   def test_zones(self):
     result = self.call("-123,37,-122,38")
     self.assertEqual(result["statusCode"], 200)
-    self.assertEqual(result["headers"]["Access-Control-Allow-Origin"], "*")
+    self.assertEqual(result["headers"]["Vary"], "Accept-Encoding, Origin")
+    self.assertEqual(result["headers"]["X-Robots-Tag"], "noindex")
     self.assertEqual(len(json.loads(result["body"])["features"]), 2)
 
   def test_gzip(self):

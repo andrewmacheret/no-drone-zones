@@ -24,7 +24,7 @@ Without location access, you can still move the map around. Zones show up once y
 ## How it works
 
 - `www/` is the web page. It uses [Leaflet](https://leafletjs.com/) with [OpenStreetMap](https://www.openstreetmap.org/) tiles for the map, and [Turf.js](https://turfjs.org/) for the distance math. It asks the API for the zones near you and in the map view as you move around.
-- `src/lambda/` is a Python AWS Lambda called `NoDroneZones`, behind API Gateway at `no-drone-zones.andrewmacheret.com`.
+- `src/lambda/` is a Python AWS Lambda called `NoDroneZones`, behind API Gateway at `no-drone-zones.andrewmacheret.com`. API Gateway handles CORS and only allows `https://andrewmacheret.com` and `http://localhost:8000`.
   - `GET /zones?bbox=west,south,east,north` returns the zones in a box (up to 10 degrees each way) as GeoJSON.
   - When called with `{"refresh": true}`, it downloads the zones from these sources with `zones.py`, simplifies the shapes to about 50 meters, and saves them in a SQLite file in the private S3 bucket `andrewmacheret-no-drone-zones`. It skips the rebuild if no source has changed, unless `"force": true` is passed. An EventBridge rule sends this once a day.
     - [FAA Class Airspace](https://adds-faa.opendata.arcgis.com/datasets/c6a62360338e408cb1512366ad61559e_0)
